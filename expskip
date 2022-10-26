@@ -34,7 +34,7 @@ getopts "b:e:f:gtp:qzA:B:T:",\my%o ; # <-- -T以外のオプションを読み�
 eval "use PerlIO::gzip;1" or die "Can't import PerlIO::gzip despite -z instruction. ($Script)\n" if $o{z} ; 
 sub lineOut ( $ ) ; # lineOutのような関数名いくつかのうち、どれかが使われる。
 sub eachFile ( $ ) ; 
-sub niceNumber ( $ ) ; 
+sub fitCheck ( $ ) ; 
 $| = 1 ; 
 my (@nums0, @nums) ; # 何行目を-bと-pの機能で出力するかについての行番号を保管。0はマスターを意味する。
 $o{b} //= 10 ; # 基数の指定。base 
@@ -79,29 +79,30 @@ sub procFiles ( ) { # 複数のファイルも想定して処理
 sub eachFile ( $ ) { # 1個のファイルに対する処理(引数はファイルハンドル。STDINの場合もある。)
   @nums = @nums0 ;
   my $FH = $_[0] ; 
-  my $rd ; # この数が正なら出力する。キリの良い数などのトリガーで一定値が格納されて、1ずつ減る仕組み。
-  my @stockLines ; # いくつかの行の、文字列を格納する。
+  my $ready ; # この数が正なら出力する。→ 仕組みは、キリの良い数などのトリガーにより、一定値が格納されて、1ずつ減る。
+  my @stockLines = () ; # いくつかの行の、文字列を格納する。
   # 最初の方は、まず一定量読む。
   if ( $o{e} > 0 ) { 
     while ( <$FH> ) { 
-     push @stockLines , [ $. , $_ ]  ; 
+     #push @stockLines , [ $. , $_ ]  ; 
+     print lineOut [$.,$_];
      last if $. >= $o{e} ; 
     }
   }
-  print lineOut $_ for @stockLines ;
+  #print lineOut $_ for @stockLines ;
 
   # 条件に一致するもののみ出力する。
   while ( <$FH> ) { 
      push @stockLines , [ $. , $_ ]  ; # pushとshiftを対にしてFIFOのような仕組み
-     my $lf = shift @stockLines ; 
-     $rd = $o{A}+1 if niceNumber $lf->[0] ;
-     print lineOut $lf if $rd -- > 0  && $lf->[0] > $o{e} ; 
+     my $theNext = shift @stockLines ; 
+     $ready = $o{A} + 1 if fitCheck $$theNext[0] ;
+     print lineOut $theNext if $ready -- > 0  &&  $$theNext[0] > $o{e} ; 
   }
   print lineOut $_ for grep { $_->[0] > $o{e} } @stockLines ;   # 最後に残っているものを書き出す
 }
 
 # 関数
-sub niceNumber ( $ ) { 
+sub fitCheck ( $ ) { 
     my $head = shift @nums ;    # 数珠を回すようなイメージで処理をする
     while ( $head < $_[0] ) { push @nums , $head * $o{b} ; $head = shift @nums }
     if ( $head < $_[0] + 1 ) { push @nums , $head * $o{b} ; return $_[0] >= $o{f} } # $_[0]がfloor $head に一致
