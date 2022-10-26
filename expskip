@@ -46,9 +46,9 @@ $o{B} //= 0 ;  # 合致する行の何行前にさかのぼって続けて出力
 
 # (出力する)書式の指定
 sub lineOutSub ( $ ) ; # lineOutのような関数名いくつかのうち、どれかが使われる。
-sub lineOutColon ( $ ) { $_[0]->[0], ":\t", $_[0]->[1] }   # 行番号にコロン(:) を付加して出力
-sub lineOutG ( $ ) { GREEN $_[0]->[0] , RESET "\t", $_[0]->[1] }   
-sub lineOutQ ( $ ) { $_[0]->[1] }   
+sub lineOutColon ( $ ) { $_[0][0], ":\t", $_[0][1] }   # 行番号にコロン(:) を付加して出力
+sub lineOutG ( $ ) { GREEN $_[0][0] , RESET "\t", $_[0][1] }   
+sub lineOutQ ( $ ) { $_[0][1] }   
 sub lineOutTime ( $ ) { sprintf("%02d:%02d:%02d\t", @{[localtime]}[2,1,0]), lineOutSub $_[0] }
 * lineOutSub = $o{g} ? * lineOutG : $o{q} ? * lineOutQ : * lineOutColon ; 
 * lineOut = $o{t}? *lineOutTime : * lineOutSub ;
