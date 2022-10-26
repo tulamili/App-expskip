@@ -12,7 +12,8 @@ use Term::ANSIColor qw[ color :constants ] ; $Term::ANSIColor::AUTORESET = 1 ;
 use FindBin qw [ $Script ] ; 
 
 if ( exists $ARGV[0] && $ARGV[0] =~ m/^-T/ ) {
-  my $arg = do { $ARGV[0] =~ m/^-T(.+)$/ ; $1 } // $ARGV[1] ;
+  my $A0 = 1 ;
+  my $arg = do { $ARGV[0] =~ m/^-T(.+)$/ && $1 || undef } // do { $A0 ++ ; $ARGV[1] } ; # -T のパラメータを抽出。
   do { say STDERR RED "Specify the parameter for `-T' such as `$0 -T 1m'."  ; exit } if ! defined $arg ;
   my $cmd = '' ;
   do { 
@@ -23,12 +24,13 @@ if ( exists $ARGV[0] && $ARGV[0] =~ m/^-T/ ) {
     $cmd = "$0 <(seq 4) <(seq 10)" when 'm2' ; # -T m2 で、複数のファイルを与える。
     $cmd = "seq 1e5 | $0"          when '1m' ; # -T 1m で "expskip" に 100万までの数を与える。
   } for $arg ; 
+  $cmd = join " " , $cmd , @ARGV [ $A0 .. $#ARGV ] ;  # <-- @ARGV に'や"があると思ったように動作しないであろう。
   say STDERR YELLOW BOLD ">  $cmd" ;
-  system $cmd ; 
+  system $cmd ;
   exit ;
 }
 
-getopts "b:e:f:gtp:qzA:B:ET:",\my%o ; # <-- -T以外のオプションは、ここで読み取る。
+getopts "b:e:f:gtp:qzA:B:ET:",\my%o ; # <-- -T以外のオプションを読み取る。(ただし動作検証のため、Tはここに残した。)
 eval "use PerlIO::gzip;1" or die "Can't import PerlIO::gzip despite -z instruction. ($Script)\n" if $o{z} ; 
 sub lineOut ( $ ) ; # lineOutのような関数名いくつかのうち、どれかが使われる。
 sub eachFile ( $ ) ; 
