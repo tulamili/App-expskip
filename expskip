@@ -30,7 +30,7 @@ if ( exists $ARGV[0] && $ARGV[0] =~ m/^-T/ ) {
   exit ;
 }
 
-getopts "b:e:f:gtp:qzA:B:ET:",\my%o ; # <-- -T以外のオプションを読み取る。(ただし動作検証のため、Tはここに残した。)
+getopts "b:e:f:gtp:qzA:B:T:",\my%o ; # <-- -T以外のオプションを読み取る。(ただし動作検証のため、Tはここに残した。)
 eval "use PerlIO::gzip;1" or die "Can't import PerlIO::gzip despite -z instruction. ($Script)\n" if $o{z} ; 
 sub lineOut ( $ ) ; # lineOutのような関数名いくつかのうち、どれかが使われる。
 sub eachFile ( $ ) ; 
@@ -59,7 +59,6 @@ sub Init ( ) {
   * lineOutSub = $o{g} ? * lineOutG : $o{q} ? * lineOutQ : * lineOutColon ; 
   * lineOut = $o{t}? *lineOutTime : * lineOutSub ;
 
-  select * STDERR if $o{E} ; #<-- BOLD DARKを STDERRの後に追加するとどうなるか?
   @nums0 = do { 
    my %t =(0=>['Inf'],1=>[1],2=>[1,2,4,8],5=>[1,2,5],7=>[1,1.5,2,3,5,7],8=>[1,1.5,2,3,5,8],9=>[1..$o{b}-1]) ; 
    my @t = @{$t{$o{p}//1}} ; 
@@ -86,7 +85,6 @@ sub eachFile ( $ ) { # 1個のファイルに対する処理(引数はファイ�
   my $FH = $_[0] ; 
   my $rd ; # この数が正なら出力する。キリの良い数などのトリガーで一定値が格納されて、1ずつ減る仕組み。
   my @stockLines ; # いくつかの行の、文字列を格納する。
-  * flag_E = $o{E} ? sub { print STDOUT $_ } :sub {} ; # -E の時はSTDERRに出しつつも、そのままteeのように出す
   # 最初の方は、まず一定量読む。
   if ( $o{e} > 0 ) { 
     while ( <$FH> ) { 
@@ -160,7 +158,6 @@ sub HELP_MESSAGE {
    -B num きりの良い数の何行前から表示するか。連続表示に用いる。(grepコマンドの -B と同様な動作)
    -A num きりの良い数の何行後まで表示するか。連続表示に用いる。(grepコマンドの -A と同様な動作)
 
-   -E ; 入力を標準出力にそのまま通過させつつ、通常の機能で出力させるものは、標準エラー出力に出す。
    -t ; 出力時の時刻情報を 行頭に付加。
    -z ; 入力が、gzipの形式で圧縮されていることを指定する。
 
@@ -175,7 +172,6 @@ sub HELP_MESSAGE {
    * -2 0 も実装して、何行出力したかも、処理秒数と共に標準エラー出力に書くようにしたい。
    * -: [colorName|0] で行番号の出力を制御したい。-g と -q の機能を一つにすることになる。
    * -bと-pを統合したい。-b n1,n2 として n1が基数、n2が既に-pで指定された通りにしたい。
-   * -E は無くすかも。zshの 出力のコマンド置換で、なんとかなるので。
-
+ 
 =cut
 
