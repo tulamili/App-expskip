@@ -1,4 +1,4 @@
-#! env perl
+#!/usr/bin/perl # #! env perl
 
 #  expskip 
 #    Producec by Toshiyuki Shimono, Tokyo., 2016-01 ~ 07 , 2018-3
@@ -7,11 +7,24 @@
 #     ファイル名は headtail, pickall, expskip と変遷している。
 
 use 5.014 ; use warnings ;
-use Getopt::Std ; getopts "b:e:f:gtp:qzA:B:E",\my%o ; 
+use Getopt::Std ; getopts "b:e:f:gtp:qzA:B:ET:",\my%o ; 
 use Term::ANSIColor qw[ color :constants ] ; $Term::ANSIColor::AUTORESET = 1 ; 
 use FindBin qw [ $Script ] ; 
-eval "use PerlIO::gzip;1" or die "Can't import PerlIO::gzip despite -z instruction. ($Script)\n" if $o{z} ; 
 
+if ( exists $o{T} ) {
+  my $cmd = '' ;
+  do { 
+    no warnings 'experimental::smartmatch' ;
+    $cmd = "seq 20 | $0" when '20' ; 
+    $cmd = "seq 20 | $0 -f5" when 'f5' ; 
+    $cmd = "seq 20 | $0 -p0" when 'p0' ; 
+    } for $o{T} ; 
+  say STDERR YELLOW BOLD ">  $cmd" ;
+  system $cmd ; 
+  exit ;
+}
+
+eval "use PerlIO::gzip;1" or die "Can't import PerlIO::gzip despite -z instruction. ($Script)\n" if $o{z} ; 
 sub lineOut ( $ ) ; # lineOutのような関数名いくつかのうち、どれかが使われる。
 sub eachFile ( $ ) ; 
 sub niceNumber ( $ ) ; 
@@ -24,7 +37,7 @@ $o{A} //= 0 ;  # 合致する行の何行後までさらに続けて出力する
 $o{B} //= 0 ;  # 合致する行の何行前にさかのぼって続けて出力するか Before
 
 & Init ; 
-& traverse ;  
+& procFiles ; # 複数のファイルも想定して処理。
 exit 0 ;
 
 # (出力する)書式の指定
@@ -47,35 +60,29 @@ sub Init ( ) {
   } ;
 }
 
-sub traverse ( ) { 
-  my $fnFlag = @ARGV > 1 ; 
-  while ( 1 ) { 
-    my $fn = shift @ARGV  ; # ファイル名
-    my $fh ; # ファイルハンドル
-    if ( defined $fn ) { 
-        open $fh , "<" , $fn or warn "File `$fn' does not open." and next ; 
-    } else { 
-        $fh = *STDIN ;
-    }
-    binmode $fh , ":gzip(autopop)" if $o{z}  ; 
-    say $fn if $fnFlag ;
-    eachFile $fh ; 
-    close $fh ; 
-    last if ! @ARGV  ;
-    print "\n" ; # ファイル間の空行
-  }
+sub procFiles ( ) { # 複数のファイルも想定して処理
+  my $files = @ARGV ;
+  do {
+    my $fileName = shift @ARGV  ; # ファイル名
+    my $FH ; # ファイルハンドル
+    open $FH , "<" , $fileName or warn "File `$fileName' does not open." and next if defined $fileName ; 
+    $FH = *STDIN if ! defined $fileName ; 
+    binmode $FH , ":gzip(autopop)" if $o{z}  ; 
+    say UNDERLINE $fileName if $files >= 2 ; # ファイルが2個以上指定されていたら、ファイル名を表示する。
+    & eachFile ( $FH ) ; 
+  } while @ARGV 
 }
 
-sub eachFile ( $ ) { 
+sub eachFile ( $ ) { # 1個のファイルに対する処理(引数はファイルハンドル。STDINの場合もある。)
   #$. = 0 ;
   @nums = @nums0 ;
-  my $fh = $_[0] ; 
+  my $FH = $_[0] ; 
   my $rd ; # この数が正なら出力する。キリの良い数などのトリガーで一定値が格納されて、1ずつ減る仕組み。
   my @stockLines ; # いくつかの行の、文字列を格納する。
   * flag_E = $o{E} ? sub { print STDOUT $_ } :sub {} ; # -E の時はSTDERRに出しつつも、そのままteeのように出す
   # 最初の方は、まず一定量読む。
   if ( $o{e} > 0 ) { 
-    while ( <$fh> ) { 
+    while ( <$FH> ) { 
      & flag_E ;
      push @stockLines , [ $. , $_ ]  ; 
      last if $. >= $o{e} ; 
@@ -84,7 +91,7 @@ sub eachFile ( $ ) {
   print lineOut $_ for @stockLines ;
 
   # 条件に一致するもののみ出力する。
-  while ( <$fh> ) { 
+  while ( <$FH> ) { 
      & flag_E ;
      push @stockLines , [ $. , $_ ]  ; # pushとshiftを対にしてFIFOのような仕組み
      my $lf = shift @stockLines ; 
@@ -121,7 +128,7 @@ sub HELP_MESSAGE {
 
 =head1
 
- $0 [-z] [-B 0] [-A 0] [-p 1] [-f 1] [-e 3]  
+ $0 [-z] [-B 0] [-A 0] [-p 1] [-f 1] [-e 2]  
 
    大きなテキストファイルの全体を把握しやすくするため、
    最初と最後の数行と途中の 10, 20, 50, 100, 200, 500, 1000 .. 行目などを出力する。
