@@ -55,9 +55,10 @@ sub lineOutTime ( $ ) { sprintf("%02d:%02d:%02d\t", @{[localtime]}[2,1,0]), line
 * lineOut = $o{t}? *lineOutTime : * lineOutSub ;
 
 @nums0 = do { 
-my %t =(0=>['Inf'],1=>[1],2=>[1,2,4,8],5=>[1,2,5],7=>[1,1.5,2,3,5,7],8=>[1,1.5,2,3,5,8],9=>[1..$o{b}-1]) ; 
-my @t = @{$t{$o{p}//1}} ; 
-grep {$_ < $o{b} || $_ == 'Inf'} @t 
+  my %t =(0=>['Inf'],1=>[1],2=>[1,2,4,8],5=>[1,2,5],7=>[1,1.5,2,3,5,7],8=>[1,1.5,2,3,5,8],9=>[1..$o{b}-1]) ; 
+  do { say STDERR BOLD RED "-p should has a parameter in {0,1,2,5,7,8,9}" ; exit } if !defined $t{$o{p}} ; 
+  my @t = @{$t{$o{p}//1}} ; 
+  grep {$_ < $o{b} || $_ == 'Inf'} @t 
 } ;
 
 & procFiles ; # 複数のファイルも想定して処理。
