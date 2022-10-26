@@ -26,6 +26,7 @@ if ( exists $ARGV[0] && $ARGV[0] =~ m/^-T/ ) {
     $cmd = "seq 1e6 | $0"          when '1m' ; # -T 1m で "expskip" に 100万までの数を与える。
     $cmd = "seq 1e5 | $0 -e0"      when 'e0' ; # -T e0
     $cmd = "seq 1e5 | $0 -f5"      when 'f5' ; # -T f5
+    $cmd = "seq 100 | tr 0-9 A-H | $0 -: 'yellow green bold italic'" ; # -T ac で、数字以外と行番号の色づけを同時にテスト。
   } for $arg ; 
   $cmd = join " " , $cmd , @ARGV [ $A0 .. $#ARGV ] ;  # <-- @ARGV に'や"があると思ったように動作しないであろう。
   say STDERR YELLOW BOLD ">  $cmd" ;
@@ -87,7 +88,7 @@ sub eachFile ( $ ) { # 1個のファイルに対する処理(引数はファイ�
   do { while ( <$FH> ) { last if $. +1 >= $o{f} } } if $o{f} >= 2 ; 
   do { while ( <$FH> ) { push @stockLines , [ $. , $_ ] ; last if @stockLines >= $o{e} } } if $o{e} > 0 ; 
   print lineOut $_ for @stockLines ;
-  my $firstEnd = @stockLines ? $stockLines[-1][1] : 0 ; # 最初の段階で読んだ最後の行の行番号
+  my $firstEnd = @stockLines ? $stockLines[-1][0] : 0 ; # 最初の段階で読んだ最後の行の行番号
   # 2. 条件に一致するもののみ出力する。
   while ( <$FH> ) { 
      push @stockLines , [ $. , $_ ]  ; # pushとshiftを対にしてFIFOのような仕組み
