@@ -11,6 +11,7 @@ use Getopt::Std ;
 use Term::ANSIColor qw[ color :constants ] ; $Term::ANSIColor::AUTORESET = 1 ; 
 use FindBin qw [ $Script ] ; 
 
+# テスト/デモ test/demo
 if ( exists $ARGV[0] && $ARGV[0] =~ m/^-T/ ) {
   my $A0 = 1 ;
   my $arg = do { $ARGV[0] =~ m/^-T(.+)$/ && $1 || undef } // do { $A0 ++ ; $ARGV[1] } ; # -T のパラメータを抽出。
@@ -71,7 +72,7 @@ sub procFiles ( ) { # 複数のファイルも想定して処理
     my $FH ; # ファイルハンドル
     open $FH , "<" , $fileName or warn "File `$fileName' does not open." and next if defined $fileName ; 
     $FH = *STDIN if ! defined $fileName ; 
-    binmode $FH , ":gzip(autopop)" if $o{z}  ; 
+    binmode $FH , ":gzip(autopop)" if $o{z}  ; # <-- autopop とは?
     say UNDERLINE $fileName if $files >= 2 ; # ファイルが2個以上指定されていたら、ファイル名を表示する。
     & eachFile ( $FH ) ; 
   } while @ARGV 
@@ -160,6 +161,7 @@ sub HELP_MESSAGE {
    * -: [colorName|0] で行番号の出力を制御したい。-g と -q の機能を一つにすることになる。
    * -bと-pを統合したい。-b n1,n2 として n1が基数、n2が既に-pで指定された通りにしたい。
    * 複数のファイルの中身を出すときに、ファイル名に下線を引くようにしたが、下線にするにもオプションで変更可能にしたいかも。
+   * 時刻情報をもっと正確に出したいかも。Time::HiResを使って。コアモジュールかどうかも確かめた上で実装したい。
  
 =cut
 
