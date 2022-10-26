@@ -82,20 +82,15 @@ sub eachFile ( $ ) { # 1個のファイルに対する処理(引数はファイ�
   my $ready ; # この数が正なら出力する。→ 仕組みは、キリの良い数などのトリガーにより、一定値が格納されて、1ずつ減る。
   my @stockLines = () ; # いくつかの行の、文字列を格納する。
   # 最初の方は、まず一定量読む。
-  if ( $o{e} > 0 ) { 
-    while ( <$FH> ) { 
-     #push @stockLines , [ $. , $_ ]  ; 
-     print lineOut [$.,$_];
-     last if $. >= $o{e} ; 
-    }
-  }
-  #print lineOut $_ for @stockLines ;
+  do { while ( <$FH> ) { last if $. +1 >= $o{f} } } if exists $o{f} ; 
+  do { while ( <$FH> ) { push @stockLines , [ $. , $_ ] ; last if @stockLines >= $o{e} } } if $o{e} > 0 ; 
+  print lineOut $_ for @stockLines ;
 
   # 条件に一致するもののみ出力する。
   while ( <$FH> ) { 
      push @stockLines , [ $. , $_ ]  ; # pushとshiftを対にしてFIFOのような仕組み
      my $theNext = shift @stockLines ; 
-     $ready = $o{A} + 1 if fitCheck $$theNext[0] ;
+     $ready = fitCheck $$theNext[0] ? $o{A} + 1 : 0 ;
      print lineOut $theNext if $ready -- > 0  &&  $$theNext[0] > $o{e} ; 
   }
   print lineOut $_ for grep { $_->[0] > $o{e} } @stockLines ;   # 最後に残っているものを書き出す
