@@ -77,7 +77,6 @@ sub procFiles ( ) { # 複数のファイルも想定して処理
 }
 
 sub eachFile ( $ ) { # 1個のファイルに対する処理(引数はファイルハンドル。STDINの場合もある。)
-  #$. = 0 ;
   @nums = @nums0 ;
   my $FH = $_[0] ; 
   my $rd ; # この数が正なら出力する。キリの良い数などのトリガーで一定値が格納されて、1ずつ減る仕組み。
@@ -85,7 +84,6 @@ sub eachFile ( $ ) { # 1個のファイルに対する処理(引数はファイ�
   # 最初の方は、まず一定量読む。
   if ( $o{e} > 0 ) { 
     while ( <$FH> ) { 
-     #& flag_E ;
      push @stockLines , [ $. , $_ ]  ; 
      last if $. >= $o{e} ; 
     }
@@ -94,7 +92,6 @@ sub eachFile ( $ ) { # 1個のファイルに対する処理(引数はファイ�
 
   # 条件に一致するもののみ出力する。
   while ( <$FH> ) { 
-     #& flag_E ;
      push @stockLines , [ $. , $_ ]  ; # pushとshiftを対にしてFIFOのような仕組み
      my $lf = shift @stockLines ; 
      $rd = $o{A}+1 if niceNumber $lf->[0] ;
