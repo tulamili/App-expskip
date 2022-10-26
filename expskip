@@ -88,7 +88,7 @@ sub eachFile ( $ ) { # 1個のファイルに対する処理(引数はファイ�
   # 最初の方は、まず一定量読む。
   if ( $o{e} > 0 ) { 
     while ( <$FH> ) { 
-     & flag_E ;
+     #& flag_E ;
      push @stockLines , [ $. , $_ ]  ; 
      last if $. >= $o{e} ; 
     }
@@ -97,7 +97,7 @@ sub eachFile ( $ ) { # 1個のファイルに対する処理(引数はファイ�
 
   # 条件に一致するもののみ出力する。
   while ( <$FH> ) { 
-     & flag_E ;
+     #& flag_E ;
      push @stockLines , [ $. , $_ ]  ; # pushとshiftを対にしてFIFOのような仕組み
      my $lf = shift @stockLines ; 
      $rd = $o{A}+1 if niceNumber $lf->[0] ;
