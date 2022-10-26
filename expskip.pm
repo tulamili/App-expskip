@@ -1,24 +1,22 @@
 package App::expskip ;  
-our $VERSION = '0.112' ; 
-our $DATE = '2022-10-26T16:11+09:00' ; 
+our $VERSION = '0.113' ; 
+our $DATE = '2022-10-26T18:46+09:00' ; 
 
 =encoding utf8
 
 =head1 NAME
 
-App::expskip - To see a large text file, 1st, 10th, 100th, 1000th .. lines are shown as well as a few other lines.
+App::expskip - To see a large text file, 1st, 10th, 100th, 1000th .. lines are shown to see fewer lines. Output lines can be specifed by the options.
 
 =head1 SYNOPSIS
 
 This module provides a Unix-like command `F<expskip>'. 
 
- expskip [-z] [-A 0] [-B 0] [-1289] [-f 1] [-n 3]  
+ $0 [-z] [-B 0] [-A 0] [-p 1] [-f 1] [-e 2]  
 
-   大きなテキストファイルの全体を把握しやすいように、
-   途中の適当な数の行数の位置、及び最後の数行を表示する。
+   大きなテキストファイルの全体を把握しやすくするため、
+   最初と最後の数行と途中の 1, 10, 100, 1000 .. 行目などを出力する。どう出力するかは、オプションで指定可能。
 
-   途中は 10, 20, 50 , 100, 200, 500 , 1000 .. 行目など切りの良い数字の行数で表示をする。
-   その途中の行番号については、開始行を -f num のように指定することが出来る。
 
 =head1 DESCRIPTION
 
