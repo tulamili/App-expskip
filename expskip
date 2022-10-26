@@ -48,13 +48,13 @@ $o{A} //= 0 ;  # 合致する行の何行後までさらに続けて出力する
 $o{B} //= 0 ;  # 合致する行の何行前にさかのぼって続けて出力するか Before
 
 # (出力する)書式の指定 : 各関数は、どれも、1個だけの引数だが、それが無名配列の[行番号,その行の文字列]である。
-sub lineOutSub ( $ ) ; # lineOutのような関数名いくつかのうち、どれかが使われる。
+sub lineOutFnc ( $ ) ; # lineOutのような関数名いくつかのうち、どれかが使われる。
 sub lineOutColon ( $ ) { $_[0][0], ":\t", $_[0][1] }   # 行番号にコロン(:) を付加して出力
 sub lineOutCouleur ( $ ) { color($o{':'}) . "$_[0][0]:" . color('reset') . "\t", $_[0][1] }    # G 
 sub lineOutBlunt ( $ ) { $_[0][1] }   
-sub lineOutTime ( $ ) { sprintf("%02d:%02d:%02d\t", @{[localtime]}[2,1,0]), lineOutSub $_[0] }
-* lineOutSub = ($o{':'}//'')eq"0"? * lineOutBlunt : (exists$o{':'}) ? * lineOutCouleur : * lineOutColon ; 
-* lineOut = $o{t}? *lineOutTime : * lineOutSub ;
+sub lineOutTime ( $ ) { sprintf("%02d:%02d:%02d\t", @{[localtime]}[2,1,0]), lineOutFnc $_[0] }
+* lineOutFnc = ($o{':'}//'')eq"0"? * lineOutBlunt : (exists$o{':'}) ? * lineOutCouleur : * lineOutColon ; 
+* lineOut = $o{t}? *lineOutTime : * lineOutFnc ;
 
 @nums0 = do { 
   my %t =(0=>['Inf'],1=>[1],2=>[1,2,4,8],5=>[1,2,5],7=>[1,1.5,2,3,5,7],8=>[1,1.5,2,3,5,8],9=>[1..$o{b}-1]) ; 
@@ -97,7 +97,7 @@ sub eachFile ( $ ) { # 1個のファイルに対する処理(引数はファイ�
      print lineOut $theNext if $ready -- > 0  &&  $$theNext[0] > $firstEnd ; 
   }
   # 3. 残っているものを書き出す
-  print lineOut $_ for grep { $_->[0] > $o{e} } @stockLines ;   
+  print lineOut $_ for grep { $$_[0] > $o{e} } @stockLines ;   
 }
 
 sub fitCheck ( $ ) { # 行番号を引数に与える。すると、それが出力可能に該当するかを判定する。@numsを暗黙に操作している。
