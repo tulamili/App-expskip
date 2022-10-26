@@ -36,35 +36,32 @@ sub lineOut ( $ ) ; # lineOutのような関数名いくつかのうち、どれ
 sub eachFile ( $ ) ; 
 sub niceNumber ( $ ) ; 
 $| = 1 ; 
-my (@nums0, @nums) ;  
+my (@nums0, @nums) ; # 何行目を-bと-pの機能で出力するかについての行番号を保管。0はマスターを意味する。
 $o{b} //= 10 ; # 基数の指定。base 
 $o{e} //= 2 ;  # 最初と最後のそれぞれ何行を出力するか。Edge 
 $o{f} //= 1 ;  # 開始行を指定する。from 
 $o{A} //= 0 ;  # 合致する行の何行後までさらに続けて出力するか After 
 $o{B} //= 0 ;  # 合致する行の何行前にさかのぼって続けて出力するか Before
 
-& Init ; 
+
+# (出力する)書式の指定
+sub lineOutSub ( $ ) ; # lineOutのような関数名いくつかのうち、どれかが使われる。
+sub lineOutColon ( $ ) { $_[0]->[0], ":\t", $_[0]->[1] }   # 行番号にコロン(:) を付加して出力
+sub lineOutG ( $ ) { GREEN $_[0]->[0] , RESET "\t", $_[0]->[1] }   
+sub lineOutQ ( $ ) { $_[0]->[1] }   
+sub lineOutTime ( $ ) { sprintf("%02d:%02d:%02d\t", @{[localtime]}[2,1,0]), lineOutSub $_[0] }
+* lineOutSub = $o{g} ? * lineOutG : $o{q} ? * lineOutQ : * lineOutColon ; 
+* lineOut = $o{t}? *lineOutTime : * lineOutSub ;
+
+@nums0 = do { 
+my %t =(0=>['Inf'],1=>[1],2=>[1,2,4,8],5=>[1,2,5],7=>[1,1.5,2,3,5,7],8=>[1,1.5,2,3,5,8],9=>[1..$o{b}-1]) ; 
+my @t = @{$t{$o{p}//1}} ; 
+grep {$_ < $o{b} || $_ == 'Inf'} @t 
+} ;
+
 & procFiles ; # 複数のファイルも想定して処理。
 exit 0 ;
 
-# (出力する)書式の指定
-
-sub Init ( ) { 
-
-  sub lineOutSub ( $ ) ; # lineOutのような関数名いくつかのうち、どれかが使われる。
-  sub lineOutColon ( $ ) { $_[0]->[0], ":\t", $_[0]->[1] }   # 行番号にコロン(:) を付加して出力
-  sub lineOutG ( $ ) { GREEN $_[0]->[0] , RESET "\t", $_[0]->[1] }   
-  sub lineOutQ ( $ ) { $_[0]->[1] }   
-  sub lineOutTime ( $ ) { sprintf("%02d:%02d:%02d\t", @{[localtime]}[2,1,0]), lineOutSub $_[0] }
-  * lineOutSub = $o{g} ? * lineOutG : $o{q} ? * lineOutQ : * lineOutColon ; 
-  * lineOut = $o{t}? *lineOutTime : * lineOutSub ;
-
-  @nums0 = do { 
-   my %t =(0=>['Inf'],1=>[1],2=>[1,2,4,8],5=>[1,2,5],7=>[1,1.5,2,3,5,7],8=>[1,1.5,2,3,5,8],9=>[1..$o{b}-1]) ; 
-   my @t = @{$t{$o{p}//1}} ; 
-   grep {$_ < $o{b} || $_ == 'Inf'} @t 
-  } ;
-}
 
 sub procFiles ( ) { # 複数のファイルも想定して処理
   my $files = @ARGV ;
