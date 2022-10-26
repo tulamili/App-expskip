@@ -22,7 +22,7 @@ if ( exists $ARGV[0] && $ARGV[0] =~ m/^-T/ ) {
     $cmd = "seq 20 | $0 -f5"       when 'f5' ; # -T f5 で "expskip -f5" をシミュレート
     $cmd = "seq 20 | $0 -p0"       when 'p0' ; # -T p0 で "expskip -p0" をシミュレート
     $cmd = "$0 <(seq 4) <(seq 10)" when 'm2' ; # -T m2 で、複数のファイルを与える。
-    $cmd = "seq 1e5 | $0"          when '1m' ; # -T 1m で "expskip" に 100万までの数を与える。
+    $cmd = "seq 1e6 | $0"          when '1m' ; # -T 1m で "expskip" に 100万までの数を与える。
     $cmd = "seq 1e5 | $0 -e0"      when 'e0' ; # -T e0
     $cmd = "seq 1e5 | $0 -f5"      when 'f5' ; # -T f5
   } for $arg ; 
