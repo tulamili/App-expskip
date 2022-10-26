@@ -39,7 +39,7 @@ $| = 1 ;
 my (@nums0, @nums) ; # 何行目を-bと-pの機能で出力するかについての行番号を保管。0はマスターを意味する。
 $o{b} //= 10 ; # 基数の指定。base 
 $o{e} //= 2 ;  # 最初と最後のそれぞれ何行を出力するか。Edge 
-$o{f} //= 1 ;  # 開始行を指定する。from 
+$o{f} ||= 1 ;  # 開始行を指定する。0でもundefでも値が1になるようにする。from 
 $o{A} //= 0 ;  # 合致する行の何行後までさらに続けて出力するか After 
 $o{B} //= 0 ;  # 合致する行の何行前にさかのぼって続けて出力するか Before
 
@@ -81,19 +81,20 @@ sub eachFile ( $ ) { # 1個のファイルに対する処理(引数はファイ�
   my $FH = $_[0] ; 
   my $ready ; # この数が正なら出力する。→ 仕組みは、キリの良い数などのトリガーにより、一定値が格納されて、1ずつ減る。
   my @stockLines = () ; # いくつかの行の、文字列を格納する。
-  # 最初の方は、まず一定量読む。
-  do { while ( <$FH> ) { last if $. +1 >= $o{f} } } if exists $o{f} ; 
+  # 1. 最初の方は、まず一定量読む。
+  do { while ( <$FH> ) { last if $. +1 >= $o{f} } } if $o{f} >= 2 ; 
   do { while ( <$FH> ) { push @stockLines , [ $. , $_ ] ; last if @stockLines >= $o{e} } } if $o{e} > 0 ; 
   print lineOut $_ for @stockLines ;
-
-  # 条件に一致するもののみ出力する。
+  my $firstEnd = @stockLines ? $stockLines[-1][1] : 0 ; # 最初の段階で読んだ最後の行の行番号
+  # 2. 条件に一致するもののみ出力する。
   while ( <$FH> ) { 
      push @stockLines , [ $. , $_ ]  ; # pushとshiftを対にしてFIFOのような仕組み
      my $theNext = shift @stockLines ; 
      $ready = fitCheck $$theNext[0] ? $o{A} + 1 : 0 ;
-     print lineOut $theNext if $ready -- > 0  &&  $$theNext[0] > $o{e} ; 
+     print lineOut $theNext if $ready -- > 0  &&  $$theNext[0] > $firstEnd ; 
   }
-  print lineOut $_ for grep { $_->[0] > $o{e} } @stockLines ;   # 最後に残っているものを書き出す
+  # 3. 残っているものを書き出す
+  print lineOut $_ for grep { $_->[0] > $o{e} } @stockLines ;   
 }
 
 # 関数
@@ -157,7 +158,7 @@ sub HELP_MESSAGE {
  開発上のメモ: 
    * キーボードからの入力待ちの場合は、-tで検出して、ALRMシグナルで受付を促すようにしたい。
    * -p0が機能していない。
-   * -f が機能していない。
+   * #-f が機能していない。
    * -e で数字をコンマ区切りで2個指定可能にして、先頭と末尾の行数を指定できるようにしたい。
    * -2 0 も実装して、何行出力したかも、処理秒数と共に標準エラー出力に書くようにしたい。
    * -: [colorName|0] で行番号の出力を制御したい。-g と -q の機能を一つにすることになる。
