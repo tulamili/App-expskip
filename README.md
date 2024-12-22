@@ -11,6 +11,6 @@ This module provides a Unix-like command `expandtab'.
 
 ▼ 提供するソフトウェアについてのライセンス表示
 
- Copyright (c) 2016-2022 Toshiyuki SHIMONO. All rights reserved.
+ Copyright (c) 2016-2024 Toshiyuki SHIMONO. All rights reserved.
  This program is free software; you can redistribute it and/or
  modify it under the same terms as Perl itself.
